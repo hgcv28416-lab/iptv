@@ -1,30 +1,38 @@
 import requests
-import os
 
+# البيانات من صورتك الأصلية
 BASE_URL = "http://smarter8k.ru"
-USERNAME = "iptvload61af"
-PASSWORD = "686c93b64f"
+USER = "iptvload61af"
+PASS = "686c93b64f"
 
-def fetch_channels():
-    # الرابط المباشر للملف
-    url = f"{BASE_URL}/get.php?username={USERNAME}&password={PASSWORD}&type=m3u_plus&output=ts"
+def get_live_streams():
+    # استخدام رابط الـ API المباشر لـ Xtream Codes
+    url = f"{BASE_URL}/player_api.php?username={USER}&password={PASS}&action=get_live_streams"
     
     try:
-        print(f"Connecting to: {BASE_URL}...")
-        response = requests.get(url, timeout=30)
+        print("--- بدأت عملية الاستخراج المباشر ---")
+        response = requests.get(url, timeout=15)
         
-        if response.status_code == 200 and len(response.text) > 100:
-            with open("channels_list.m3u", "w", encoding="utf-8") as f:
-                f.write(response.text)
-            print("✅ Success: File created successfully!")
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, list):
+                print(f"✅ تم العثور على {len(data)} قناة!")
+                print("-" * 30)
+                for item in data[:50]: # سنطبع أول 50 قناة للتجربة
+                    name = item.get('name')
+                    stream_id = item.get('stream_id')
+                    container = item.get('container_extension', 'ts')
+                    link = f"{BASE_URL}/{USER}/{PASS}/{stream_id}.{container}"
+                    print(f"القناة: {name} | الرابط: {link}")
+                print("-" * 30)
+                print("ملاحظة: طبعت لك أول 50 قناة فقط في الـ Logs لتسهيل النسخ.")
+            else:
+                print("❌ السيرفر استجاب ولكن البيانات ليست قائمة قنوات. قد يكون الحساب منتهي.")
         else:
-            print(f"❌ Error: Received empty content or status {response.status_code}")
-            # إنشاء ملف فارغ مؤقتاً لتجنب فشل الـ Action
-            with open("channels_list.m3u", "w") as f: f.write("# Empty list - Check Credentials")
+            print(f"❌ فشل الاتصال. كود الحالة: {response.status_code}")
             
     except Exception as e:
-        print(f"❌ Exception: {e}")
-        with open("channels_list.m3u", "w") as f: f.write(f"# Error: {e}")
+        print(f"❌ حدث خطأ تقني: {e}")
 
 if __name__ == "__main__":
-    fetch_channels()
+    get_live_streams()
