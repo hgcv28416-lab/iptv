@@ -1,0 +1,29 @@
+name: Extract IPTV Channels
+
+on:
+  workflow_dispatch: # يتيح لك تشغيل العملية يدوياً بكبسة زر
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Run extraction script
+      run: python extractor.py
+
+    - name: Upload result
+      uses: actions/upload-artifact@v4
+      with:
+        name: iptv-channels-list
+        path: channels_list.m3u
